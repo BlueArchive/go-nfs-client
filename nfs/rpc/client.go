@@ -57,6 +57,8 @@ func DialTCP(network string, ldr *net.TCPAddr, addr string) (*Client, error) {
 		return nil, err
 	}
 
+	conn.SetKeepAlive(true)
+
 	t := &tcpTransport{
 		r:  bufio.NewReader(conn),
 		wc: conn,
