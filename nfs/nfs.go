@@ -220,6 +220,7 @@ type FSInfo struct {
 
 // Dial an RPC svc after getting the port from the portmapper
 func DialService(addr string, prog rpc.Mapping) (*rpc.Client, error) {
+	//util.DefaultLogger.SetDebug(true)
 	pm, err := rpc.DialPortmapper("tcp", addr)
 	if err != nil {
 		util.Errorf("Failed to connect to portmapper: %s", err)
@@ -229,14 +230,16 @@ func DialService(addr string, prog rpc.Mapping) (*rpc.Client, error) {
 
 	port, err := pm.Getport(prog)
 	if err != nil {
+		util.Debugf("Failed port mapper Getport:  %s", err.Error())
 		return nil, err
 	}
 
+	util.Debugf("Successfully connected to portmapper, port: %d", port)
 	client, err := dialService(addr, port)
 	if err != nil {
 		return nil, err
 	}
-
+	
 	return client, nil
 }
 
@@ -278,18 +281,18 @@ func dialService(addr string, port int) (*rpc.Client, error) {
 
 			return nil, err
 		}
-
-		util.Debugf("using random port %d -> %d", p, port)
 	} else {
 		raddr := fmt.Sprintf("%s:%d", addr, port)
-		util.Debugf("Connecting to %s from unprivileged port", raddr)
-
+		util.Debugf("Connecting to %s", raddr)
+		
 		client, err = rpc.DialTCP("tcp", ldr, raddr)
 		if err != nil {
 			return nil, err
 		}
 	}
-
+	
+	util.Debugf("using random port %d -> %d", p, port)
+	
 	return client, nil
 }
 

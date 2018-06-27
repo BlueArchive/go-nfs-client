@@ -9,6 +9,7 @@ import (
 
 	"github.com/vmware/go-nfs-client/nfs/rpc"
 	"github.com/vmware/go-nfs-client/nfs/xdr"
+	"github.com/vmware/go-nfs-client/nfs/util"
 )
 
 const (
@@ -67,6 +68,9 @@ func (m *Mount) Unmount() error {
 }
 
 func (m *Mount) Mount(dirpath string, auth rpc.Auth) (*Target, error) {
+	
+	util.Debugf("Mounting %s", dirpath)
+	
 	type mount struct {
 		rpc.Header
 		Dirpath string
@@ -84,14 +88,20 @@ func (m *Mount) Mount(dirpath string, auth rpc.Auth) (*Target, error) {
 		dirpath,
 	})
 	if err != nil {
+		util.Debugf("Mounting %s m.Call fail: %s", dirpath, err.Error())
 		return nil, err
 	}
+
+	util.Debugf("Mounting %s m.Call ok", dirpath)
 
 	mountstat3, err := xdr.ReadUint32(res)
 	if err != nil {
+		util.Debugf("Mounting %s xdr.ReadUint32 fail: %s", dirpath, err.Error())
 		return nil, err
 	}
 
+	util.Debugf("Mounting %s xdr.ReadUint32 ok: %d", dirpath, mountstat3)
+	
 	switch mountstat3 {
 	case MNT3Ok:
 		fh, err := xdr.ReadOpaque(res)
